@@ -4,6 +4,7 @@ import com.playdata.dto.BoardDto;
 import org.mariadb.jdbc.Connection;
 
 import javax.servlet.http.HttpServletRequest;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSet;
@@ -13,7 +14,7 @@ import java.util.List;
 
 /**
  * board 테이블에서 모든 데이터를 조회
- * @param req
+ * @param
  * @return List<BoardDto>
  */
 public class BoardDao {
@@ -37,5 +38,33 @@ public class BoardDao {
             e.printStackTrace();
         }
         return boardList;
+    }
+
+    /**
+     * board 테이블에서 id 에 해당하는 데이터를 조회
+     * @param id
+     * @param req
+     * @return BoardDto
+     */
+    public BoardDto selectById(String id, HttpServletRequest req) {
+        Connection conn = (Connection) req.getServletContext().getAttribute("conn");
+        BoardDto boardDto = null;
+        String sql = "SELECT * FROM board WHERE id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, Integer.parseInt(id));
+            ResultSet rs = pstmt.executeQuery();
+            if(rs.next()) {
+                boardDto = BoardDto.builder()
+                        .id(rs.getInt("id"))
+                        .title(rs.getString("title"))
+                        .content(rs.getString("content"))
+                        .author(rs.getString("author"))
+                        .created_at(rs.getString("created_at"))
+                        .build();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return boardDto;
     }
 }
